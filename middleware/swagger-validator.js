@@ -178,7 +178,11 @@ var wrapEnd = function (req, res, next) {
   var writtenData = [];
 
   var originalWrite = res.write;
-  res.write = function(data) {
+  res.write = function(data, encoding, cb) {
+    if (res.swaggerIgnoreResponseValidation) {
+      res.write = originalWrite;
+      return res.write(data, encoding, cb);
+    }
     if(typeof data !== 'undefined') {
       writtenData.push(data);
     }
@@ -186,7 +190,11 @@ var wrapEnd = function (req, res, next) {
     // it to our response.
   };
 
-  res.end = function (data, encoding) {
+  res.end = function (data, encoding, cb) {
+    if (res.swaggerIgnoreResponseValidation) {
+      res.end = originalEnd;
+      return res.end(data, encoding, cb);
+    }
     var schema = operation;
     var val;
     if(data)
